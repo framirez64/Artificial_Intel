@@ -30,6 +30,8 @@ def shopSmart(orderList, fruitShops):
         fruitShops: List of FruitShops
     """
     "*** YOUR CODE HERE ***"
+        for fruit, pounds in orderList:
+
     return None
 
 
