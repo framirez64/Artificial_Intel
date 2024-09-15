@@ -425,7 +425,7 @@ class AStarCornersAgent(SearchAgent):
         self.searchType = CornersProblem
 
 
-    class FoodSearchProblem:
+class FoodSearchProblem:
     """
     A search problem associated with finding the a path that collects all of the
     food (dots) in a Pacman game.
