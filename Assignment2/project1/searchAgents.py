@@ -76,10 +76,10 @@ class SearchAgent(Agent):
     """
 
     def __init__(
-        self,
-        fn="depthFirstSearch",
-        prob="PositionSearchProblem",
-        heuristic="nullHeuristic",
+            self,
+            fn="depthFirstSearch",
+            prob="PositionSearchProblem",
+            heuristic="nullHeuristic",
     ):
         # Warning: some advanced Python magic is employed below to find the right functions and problems
 
@@ -163,13 +163,13 @@ class PositionSearchProblem(search.SearchProblem):
     """
 
     def __init__(
-        self,
-        gameState,
-        costFn=lambda x: 1,
-        goal=(1, 1),
-        start=None,
-        warn=True,
-        visualize=True,
+            self,
+            gameState,
+            costFn=lambda x: 1,
+            goal=(1, 1),
+            start=None,
+            warn=True,
+            visualize=True,
     ):
         """
         Stores the start and goal.
@@ -335,6 +335,8 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.StartingPoint = self.startingPosition
+        self.Corners = ["Unknown", "Unknown", "Unknown", "Unknown"]
 
     def getStartState(self):
         """
@@ -342,6 +344,7 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        return self.StartingPoint, self.Corners
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -349,6 +352,8 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
+        for i in  Corners:
+            
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
