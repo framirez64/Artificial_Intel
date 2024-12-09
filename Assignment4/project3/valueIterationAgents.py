@@ -71,12 +71,11 @@ class ValueIterationAgent(ValueEstimationAgent):
             for state in self.mdp.getStates():
                 if self.mdp.isTerminal(state):
                     continue
-                maxValue = -99999
+                maxValue = float('-inf')
                 for action in self.mdp.getPossibleActions(state):
                     actionValue = 0
                     for nextState, prob in self.mdp.getTransitionStatesAndProbs(state, action):
-                        actionValue += prob * (self.mdp.getReward(state, action, nextState) +
-                                               self.discount * self.values[nextState])
+                        actionValue += prob * (self.mdp.getReward(state, action, nextState) + self.discount * self.values[nextState])
                     maxValue = max(maxValue, actionValue)
                 currValue[state] = maxValue
             self.values = currValue
@@ -97,7 +96,6 @@ class ValueIterationAgent(ValueEstimationAgent):
         for nextState, prob in self.mdp.getTransitionStatesAndProbs(state, action):
             actionValue += prob * (self.mdp.getReward(state, action, nextState) +  self.discount * self.values[nextState])
         return actionValue
-        util.raiseNotDefined()
 
     def computeActionFromValues(self, state):
         """
@@ -112,14 +110,13 @@ class ValueIterationAgent(ValueEstimationAgent):
         if self.mdp.isTerminal(state):
             return
         bestAction = self.mdp.getPossibleActions(state)[0]
-        maxValue = -99999
+        maxValue = float('-inf')
         for action in self.mdp.getPossibleActions(state):
             Q_value = self.computeQValueFromValues(state, action)
             if Q_value > maxValue:
                 maxValue = Q_value
                 bestAction = action
         return bestAction
-        util.raiseNotDefined()
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
@@ -193,43 +190,37 @@ class PrioritizedSweepingValueIterationAgent(AsynchronousValueIterationAgent):
 
     def runValueIteration(self):
         "*** YOUR CODE HERE ***"
-        pq = util.PriorityQueue()
-        predecessors = {}
+        priorityQueue = util.PriorityQueue()
+        predecessors = {state: set() for state in self.mdp.getStates()}
         for state in self.mdp.getStates():
-          if not self.mdp.isTerminal(state):
-            for action in self.mdp.getPossibleActions(state):
-              for nextState, prob in self.mdp.getTransitionStatesAndProbs(state, action):
-                if nextState in predecessors:
-                  predecessors[nextState].add(state)
-                else:
-                  predecessors[nextState] = {state}
-
+            if not self.mdp.isTerminal(state):
+                for action in self.mdp.getPossibleActions(state):
+                    for nextState, prob in self.mdp.getTransitionStatesAndProbs(state, action):
+                        if prob > 0:
+                          predecessors[nextState].add(state)
+        maxQValues = {}
         for state in self.mdp.getStates():
-          if not self.mdp.isTerminal(state):
-            values = []
-            for action in self.mdp.getPossibleActions(state):
-              q_value = self.computeQValueFromValues(state, action)
-              values.append(q_value)
-            diff = abs(max(values) - self.values[state])
-            pq.update(state, - diff)
-
-        for i in range(self.iterations):
-          if pq.isEmpty():
-            break
-          temp_state = pq.pop()
-          if not self.mdp.isTerminal(temp_state):
-            values = []
-            for action in self.mdp.getPossibleActions(temp_state):
-              q_value = self.computeQValueFromValues(temp_state, action)
-              values.append(q_value)
-            self.values[temp_state] = max(values)
-
-          for p in predecessors[temp_state]:
-            if not self.mdp.isTerminal(p):
-              values = []
-              for action in self.mdp.getPossibleActions(p):
-                q_value = self.computeQValueFromValues(p, action)
-                values.append(q_value)
-              diff = abs(max(values) - self.values[p])
-              if diff > self.theta:
-                pq.update(p, -diff)
+            if not self.mdp.isTerminal(state):
+                maxQValue = max(
+                    self.computeQValueFromValues(state, action)
+                    for action in self.mdp.getPossibleActions(state)
+                )
+                maxQValues[state] = maxQValue
+                diff = abs(maxQValue - self.values[state])
+                priorityQueue.update(state, -diff)
+        for _ in range(self.iterations):
+            if priorityQueue.isEmpty():
+                break
+            currentState = priorityQueue.pop()
+            if not self.mdp.isTerminal(currentState):
+                self.values[currentState] = maxQValues[currentState]
+            for predecessor in predecessors[currentState]:
+                if not self.mdp.isTerminal(predecessor):
+                    maxQValue = max(
+                        self.computeQValueFromValues(predecessor, action)
+                        for action in self.mdp.getPossibleActions(predecessor)
+                    )
+                    maxQValues[predecessor] = maxQValue
+                    diff = abs(maxQValue - self.values[predecessor])
+                    if diff > self.theta:
+                        priorityQueue.update(predecessor, -diff)

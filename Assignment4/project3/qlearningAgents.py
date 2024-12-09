@@ -65,10 +65,10 @@ class QLearningAgent(ReinforcementAgent):
         terminal state, you should return a value of 0.0.
         """
         "*** YOUR CODE HERE ***"
-        values = [self.getQValue(state, line) for line in self.getLegalActions(state)]
-        if values:
-            return max(values)
-        return 0
+        legalActions = self.getLegalActions(state)
+        if not legalActions:
+            return 0.0
+        return max(self.getQValue(state, action) for action in legalActions)
 
 
     def computeActionFromQValues(self, state):
@@ -81,8 +81,8 @@ class QLearningAgent(ReinforcementAgent):
         legalActions = self.getLegalActions(state)
         if not legalActions:
             return None
-        bestValue = self.computeValueFromQValues(state)
-        bestActions = [action for action in legalActions if self.getQValue(state, action) == bestValue]
+        bestValued = self.computeValueFromQValues(state)
+        bestActions = [action for action in legalActions if self.getQValue(state, action) == bestValued]
         return random.choice(bestActions)
 
 # Changes 5
@@ -183,7 +183,7 @@ class ApproximateQAgent(PacmanQAgent):
         """
         "*** YOUR CODE HERE ***"
         featureFunction = self.featExtractor.getFeatures(state, action)
-        return sum([0.0] + [featureFunction[feature] * self.getWeights()[feature] for feature in featureFunction])
+        return sum(self.weights[feature] * value for feature, value in featureFunction.items())
 
     def update(self, state, action, nextState, reward):
         """
@@ -204,4 +204,8 @@ class ApproximateQAgent(PacmanQAgent):
         if self.episodesSoFar == self.numTraining:
             # you might want to print your weights here for debugging
             "*** YOUR CODE HERE ***"
+            if self.episodesSoFar == self.numTraining:
+                print("Final weights after training:")
+            for feature, weight in self.weights.items():
+                print(f"Feature: {feature}, Weight: {weight}")
             pass
